@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Puente de diciembre</title>
+<meta name="description" content="Votación del viaje del puente de diciembre: días, destino, presupuesto y ritmo.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: billete de viaje — cabecera tipo panel de salidas, pestañas, una columna de tarjetas con el calendario como protagonista */
+:root{
+  --bg:#eef2ef; --surface:#ffffff; --ink:#15231d; --muted:#5b6b63; --line:#d3ddd7;
+  --pine:#1f4d3a; --pine-ink:#f3f7f4; --amber:#c9831d; --amber-soft:#f6e7cc;
+  --ok:#2f8a57; --ok-soft:#d8efe1; --tele:#b7791f; --tele-soft:#f8e8c9; --no:#b5473a; --no-soft:#f5dcd8; --unk:#e4e9e6;
+  --f-display:"Familjen Grotesk","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0f1714; --surface:#17221d; --ink:#e6eee9; --muted:#97a8a0; --line:#2a3a33;
+  --pine:#2c6a50; --pine-ink:#f3f7f4; --amber:#e4a043; --amber-soft:#3b2e18;
+  --ok:#55b47e; --ok-soft:#1d3a2a; --tele:#e0a44a; --tele-soft:#3a2d16; --no:#e07a6c; --no-soft:#3d1f1b; --unk:#24302b;
+  color-scheme:dark;
+}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--f-body);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.wrap{max-width:860px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+
+/* Cabecera */
+header.top{background:var(--pine);color:var(--pine-ink)}
+header.top .wrap{padding-block:28px 0;display:grid;gap:14px}
+.eyebrow{font:500 12px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;opacity:.8}
+header.top h1{font-size:clamp(32px,7vw,52px);font-weight:700}
+header.top p{margin:0;max-width:58ch;opacity:.9}
+.board{display:flex;gap:6px;flex-wrap:wrap;font:500 13px/1 var(--f-mono)}
+.board span{background:rgba(255,255,255,.1);padding:7px 9px;border-radius:4px}
+.board b{color:var(--amber);font-weight:500}
+nav.tabs{display:flex;gap:4px;margin-top:8px;overflow-x:auto}
+nav.tabs button{background:transparent;border:0;color:var(--pine-ink);opacity:.75;padding:12px 16px;border-radius:8px 8px 0 0;cursor:pointer;font-family:var(--f-display);font-weight:700;font-size:16px;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{background:var(--bg);color:var(--ink);opacity:1}
+
+main .wrap{padding-block:24px 64px;display:grid;gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:grid;gap:14px;min-width:0}
+.card h2{font-size:22px}
+.card h3{font-size:17px}
+.hint{color:var(--muted);font-size:14px;margin:0}
+.q{display:grid;gap:10px}
+.q > label,.q > .lbl{font-weight:700}
+.num{font-family:var(--f-mono);font-size:12px;color:var(--amber);letter-spacing:.06em;display:block;font-weight:500}
+
+input[type=text],textarea,select{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+textarea{min-height:90px;resize:vertical}
+
+/* Chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative}
+.chip input{position:absolute;opacity:0;pointer-events:none}
+.chip span{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border:1px solid var(--line);border-radius:999px;cursor:pointer;background:var(--bg);font-size:15px;user-select:none}
+.chip span small{color:var(--muted);font-family:var(--f-mono);font-size:11px}
+.chip input:checked + span{background:var(--pine);border-color:var(--pine);color:var(--pine-ink)}
+.chip input:checked + span small{color:var(--pine-ink);opacity:.8}
+.chip input:focus-visible + span{outline:3px solid var(--amber);outline-offset:2px}
+.group-title{font:500 12px/1 var(--f-mono);text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-top:6px}
+
+/* Calendario */
+.cal{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:6px}
+.day{border:2px solid transparent;border-radius:10px;padding:8px 2px 10px;text-align:center;cursor:pointer;background:var(--unk);display:grid;gap:2px;min-height:86px;align-content:start;transition:background .15s}
+.day .dw{font:500 11px/1 var(--f-mono);text-transform:uppercase;color:var(--muted)}
+.day .dn{font:700 24px/1.1 var(--f-display)}
+.day .st{font-size:11px;line-height:1.2;font-weight:700}
+.day.fest{border-color:var(--amber)}
+.day.fest .dw::after{content:" ★";color:var(--amber)}
+.day[data-s="free"]{background:var(--ok-soft)} .day[data-s="free"] .st{color:var(--ok)}
+.day[data-s="tele"]{background:var(--tele-soft)} .day[data-s="tele"] .st{color:var(--tele)}
+.day[data-s="no"]{background:var(--no-soft)} .day[data-s="no"] .st{color:var(--no)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1px solid var(--line);background:var(--bg);padding:9px 14px;border-radius:10px;cursor:pointer;font-weight:700;font-size:14px}
+.btn.primary{background:var(--amber);border-color:var(--amber);color:#1b1206;font-size:17px;padding:14px 22px}
+.btn:disabled{opacity:.5;cursor:wait}
+.status{font-weight:700;margin:0}
+.status.ok{color:var(--ok)} .status.err{color:var(--no)}
+
+@media (max-width:620px){
+  .cal{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .day{min-height:78px}
+}
+
+/* Plan */
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.steps div{border-top:3px solid var(--pine);padding-top:10px}
+.steps b{font-family:var(--f-display);display:block;font-size:17px;margin-bottom:4px}
+@media (max-width:620px){.steps{grid-template-columns:1fr}}
+.rule{display:grid;gap:8px}
+.rule-row{display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:center}
+.bar{display:flex;height:30px;border-radius:6px;overflow:hidden;font:500 11px/30px var(--f-mono)}
+.bar .t{background:var(--no-soft);color:var(--no);text-align:center}
+.bar .e{background:var(--ok-soft);color:var(--ok);text-align:center}
+.rule-row .k{font-family:var(--f-display);font-weight:700}
+.rule-row p{grid-column:2;margin:-2px 0 6px;font-size:14px;color:var(--muted)}
+@media (max-width:520px){.rule-row{grid-template-columns:1fr}.rule-row p{grid-column:1}}
+
+/* Resultados */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.kpi{background:var(--bg);border-radius:10px;padding:12px}
+.kpi b{display:block;font:700 28px/1.1 var(--f-display);font-variant-numeric:tabular-nums}
+.kpi span{font-size:13px;color:var(--muted)}
+@media (max-width:620px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.heat{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:6px;align-items:end}
+.hcol{display:grid;gap:4px;text-align:center;font-size:12px}
+.hbar{height:120px;background:var(--unk);border-radius:6px;display:flex;flex-direction:column-reverse;overflow:hidden}
+.hbar .f{background:var(--ok)} .hbar .tl{background:var(--tele)}
+.hcol b{font:700 15px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.hcol span{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+@media (max-width:520px){.heat{gap:3px}.hbar{height:90px}}
+.win{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px;border-radius:10px;background:var(--bg)}
+.win.best{background:var(--amber-soft);outline:2px solid var(--amber)}
+.win .dates{font:700 17px/1.2 var(--f-display)}
+.win .who{font-size:13px;color:var(--muted)}
+.win .cnt{font:700 22px/1 var(--f-display);font-variant-numeric:tabular-nums;text-align:right}
+.win .cnt small{display:block;font:500 11px/1.3 var(--f-mono);color:var(--muted)}
+.pill{display:inline-block;padding:3px 8px;border-radius:999px;font-size:12px;font-weight:700;background:var(--pine);color:var(--pine-ink);white-space:nowrap}
+.tally{display:grid;gap:6px}
+.trow{display:grid;grid-template-columns:minmax(0,190px) 1fr 32px;gap:10px;align-items:center;font-size:14px}
+.trow .tb{height:12px;border-radius:6px;background:var(--unk);overflow:hidden}
+.trow .tb i{display:block;height:100%;background:var(--pine)}
+.trow .tn{font-family:var(--f-mono);text-align:right}
+.trow .tl2{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+@media (max-width:700px){.grid2{grid-template-columns:1fr}}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{padding:8px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font:500 11px/1.2 var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+td.dots{white-space:nowrap;font-family:var(--f-mono)}
+.dot{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:2px;background:var(--unk)}
+.dot.free{background:var(--ok)} .dot.tele{background:var(--tele)} .dot.no{background:var(--no)}
+.verdict{background:var(--pine);color:var(--pine-ink);border-radius:14px;padding:20px;display:grid;gap:8px}
+.verdict h2{font-size:24px}
+.verdict p{margin:0;opacity:.92}
+.empty{padding:24px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <span class="eyebrow">Viaje entre amigos · diciembre 2026</span>
+    <h1>Puente de diciembre</h1>
+    <p>Cada uno marca qué días puede, cuánto quiere gastar y qué le apetece. La página cruza las respuestas y propone las fechas y el tipo de viaje que encajan con más gente.</p>
+    <div class="board">
+      <span>VENTANA <b>5–13 DIC</b></span>
+      <span>FESTIVO <b>MAR 8</b></span>
+      <span>SALIDA <b>CUENCA</b></span>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="votar" aria-selected="true">Votar</button>
+      <button role="tab" data-tab="resultados" aria-selected="false">Resultados</button>
+      <button role="tab" data-tab="plan" aria-selected="false">Cómo decidimos</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+<!-- ============ VOTAR ============ -->
+<section id="tab-votar" class="wrap">
+  <form id="f" class="card" autocomplete="off" novalidate>
+    <div class="q">
+      <label for="name"><span class="num">01</span>¿Cómo te llamas?</label>
+      <input type="text" id="name" maxlength="40" placeholder="Tu nombre, como te conocemos en el grupo">
+      <p class="hint" id="name-hint">Si ya votaste, escribe el mismo nombre y se cargan tus respuestas para editarlas.</p>
+    </div>
+
+    <div class="q">
+      <span class="lbl"><span class="num">02</span>¿Vas a poder venir?</span>
+      <div class="chips" id="attend"></div>
+    </div>
+
+    <div class="q">
+      <span class="lbl"><span class="num">03</span>¿Qué días puedes? Toca cada día para cambiarlo</span>
+      <div class="cal" id="cal"></div>
+      <div class="legend">
+        <span><i style="background:var(--ok)"></i>Libre</span>
+        <span><i style="background:var(--tele)"></i>Puedo teletrabajando</span>
+        <span><i style="background:var(--no)"></i>No puedo</span>
+        <span><i style="background:var(--unk);border:1px solid var(--line)"></i>Sin marcar (cuenta como no lo sé)</span>
+        <span><span style="color:var(--amber)">★</span> Festivo</span>
+      </div>
+      <div class="row">
+        <button type="button" class="btn" id="all-free">Marcar todos libres</button>
+        <button type="button" class="btn" id="all-clear">Borrar marcas</button>
+      </div>
+    </div>
+
+    <div class="q">
+      <span class="lbl"><span class="num">04</span>¿Cuántos días te gustaría que durase el viaje?</span>
+      <div class="chips" id="length"></div>
+    </div>
+
+    <div class="q">
+      <span class="lbl"><span class="num">05</span>¿Desde dónde sales?</span>
+      <div class="chips" id="origin"></div>
+    </div>
+
+    <div class="q">
+      <span class="lbl"><span class="num">06</span>¿Puedes poner coche?</span>
+      <div class="chips" id="car"></div>
+    </div>
+
+    <div class="q">
+      <span class="lbl"><span class="num">07</span>Presupuesto máximo por persona, todo incluido (transporte, alojamiento y comidas)</span>
+      <div class="chips" id="budget"></div>
+    </div>
+
+    <div class="q">
+      <span class="lbl"><span class="num">08</span>¿Qué tipo de viaje prefieres? Marca todos los que te valgan</span>
+      <div class="chips" id="kind"></div>
+    </div>
+
+    <div class="q">
+      <span class="lbl"><span class="num">09</span>Destinos que te apetecen (los que quieras)</span>
+      <p class="hint">Tiempos aproximados en coche desde Cuenca. Europa es en avión desde Madrid o Valencia.</p>
+      <div id="dest"></div>
+      <input type="text" id="dest-other" maxlength="80" placeholder="¿Otro destino? Escríbelo aquí">
+    </div>
+
+    <div class="q">
+      <span class="lbl"><span class="num">10</span>¿Qué ritmo quieres?</span>
+      <div class="chips" id="pace"></div>
+    </div>
+
+    <div class="q">
+      <span class="lbl"><span class="num">11</span>¿Dónde prefieres dormir?</span>
+      <div class="chips" id="stay"></div>
+    </div>
+
+    <div class="q">
+      <span class="lbl"><span class="num">12</span>¿Qué planes te molan? (varios)</span>
+      <div class="chips" id="likes"></div>
+    </div>
+
+    <div class="q">
+      <label for="notes"><span class="num">13</span>¿Algo más? Restricciones, ideas, con quién compartes coche…</label>
+      <textarea id="notes" maxlength="500"></textarea>
+    </div>
+
+    <div class="row" style="align-items:center">
+      <button type="submit" class="btn primary" id="send">Guardar mi voto</button>
+      <p class="status" id="status" role="status"></p>
+    </div>
+  </form>
+</section>
+
+<!-- ============ RESULTADOS ============ -->
+<section id="tab-resultados" class="wrap" hidden>
+  <div id="results"><div class="empty">Cargando votos…</div></div>
+</section>
+
+<!-- ============ PLAN ============ -->
+<section id="tab-plan" class="wrap" hidden>
+  <div class="card">
+    <h2>El problema</h2>
+    <p class="hint" style="font-size:16px;color:var(--ink)">Cada uno tiene días distintos. Carlos solo tiene el 7 y el 8, Javier libra del 7 al 17, en Madrid el 7 es festivo, Alex puede teletrabajar el lunes y Raúl (compañero) aún no sabe si le dan vacaciones. Si al final solo coincidimos 3 o 4 días, subir al norte desde Cuenca supone pasar casi la mitad del viaje en el coche.</p>
+    <div class="steps">
+      <div><b>1. Todos votan</b>Días, presupuesto, tipo de viaje y destinos. Aunque no sepas si vas a poder, vota y marca «Probablemente» o «No lo sé».</div>
+      <div><b>2. Sale la ventana</b>La página busca los días seguidos en los que coincide más gente.</div>
+      <div><b>3. Sale el destino</b>Según cuántos días salgan, el tipo de viaje que compensa y lo más votado dentro de ese tipo, con el presupuesto del que menos quiera gastar.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Cuánto viaje compensa según los días</h2>
+    <p class="hint">Rojo: tiempo de trayecto (ida y vuelta) · Verde: tiempo real de viaje.</p>
+    <div class="rule">
+      <div class="rule-row"><span class="k">2–3 días</span><div class="bar"><div class="t" style="width:22%">coche</div><div class="e" style="width:78%">disfrutar</div></div>
+        <p>Escapada cerca, a 4 horas como mucho: Albarracín, Teruel, Toledo, Segovia, Alicante, La Rioja…</p></div>
+      <div class="rule-row"><span class="k">4–5 días</span><div class="bar"><div class="t" style="width:30%">coche / avión</div><div class="e" style="width:70%">disfrutar</div></div>
+        <p>Ya compensa el norte (Cantabria, Asturias, País Vasco) o una ciudad europea con vuelo barato.</p></div>
+      <div class="rule-row"><span class="k">6 o más</span><div class="bar"><div class="t" style="width:18%">viaje</div><div class="e" style="width:82%">disfrutar</div></div>
+        <p>Cualquier cosa: ruta por el norte, Europa o dos sitios combinados.</p></div>
+      <div class="rule-row"><span class="k">Norte en 3 días</span><div class="bar"><div class="t" style="width:45%">~12 h de coche</div><div class="e" style="width:55%">disfrutar</div></div>
+        <p>Lo que queremos evitar: casi medio viaje metidos en el coche.</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Cómo calcula la recomendación</h2>
+    <ul class="hint" style="font-size:15px;color:var(--ink);display:grid;gap:6px;padding-left:20px;margin:0">
+      <li>Solo cuenta a quien ha marcado <b>Sí</b> o <b>Probablemente</b>. Los «No lo sé» aparecen aparte para saber a quién esperar.</li>
+      <li>Un día en «Puedo teletrabajando» cuenta como disponible, pero el alojamiento necesitará buen wifi.</li>
+      <li>Las mejores fechas son los días seguidos (mínimo 2) con más gente. A igualdad de gente, gana la opción más larga.</li>
+      <li>El presupuesto del grupo es el más bajo de los que van; «Me da igual» no limita.</li>
+    </ul>
+  </div>
+</section>
+</main>
+
+<script>
+// Almacén compartido: web app de Apps Script sobre una Hoja de Google (ver apps-script.gs)
+const API_URL = "__API_URL__";
+
+const DAYS = [
+  {d:5, w:"sáb"}, {d:6, w:"dom", fest:"Día de la Constitución"},
+  {d:7, w:"lun", fest:"Festivo en Madrid y otras comunidades"},
+  {d:8, w:"mar", fest:"Inmaculada (festivo nacional)"},
+  {d:9, w:"mié"}, {d:10, w:"jue"}, {d:11, w:"vie"}, {d:12, w:"sáb"}, {d:13, w:"dom"}
+];
+const STATES = ["", "free", "tele", "no"];
+const STATE_TXT = {"":"—", free:"Libre", tele:"Teletrabajo", no:"No puedo"};
+
+const OPTS = {
+  attend: [["yes","Sí, seguro"],["prob","Probablemente"],["unk","No lo sé aún"],["no","No puedo"]],
+  length: [["2","2 días"],["3","3 días"],["4","4 días"],["5","5 días"],["6","6 o más"],["any","Lo que salga"]],
+  origin: [["cuenca","Cuenca"],["madrid","Madrid"],["valencia","Valencia"],["other","Otro sitio"]],
+  car: [["yes","Sí, pongo coche"],["maybe","Quizá"],["no","No tengo"]],
+  budget: [["150","Hasta 150 €"],["250","Hasta 250 €"],["400","Hasta 400 €"],["600","Hasta 600 €"],["any","Me da igual el presupuesto"]],
+  kind: [["near","Escapada cerca (≤4 h en coche)"],["north","Norte de España"],["europe","Europa en avión"]],
+  pace: [["chill","Tranquilo: dormir, comer bien, algún paseo"],["mix","Mixto: un plan al día y tiempo libre"],["full","A tope: verlo todo"]],
+  stay: [["house","Casa rural o apartamento entero"],["hostel","Hostel"],["hotel","Hotel"],["any","Me da igual"]],
+  likes: [["nature","Naturaleza y rutas suaves"],["food","Comer y beber bien"],["party","Fiesta"],["city","Ciudad y cultura"],["spa","Termas o spa"],["snow","Nieve"],["chillhouse","Casa, juegos y barbacoa"]]
+};
+const DESTS = [
+  {g:"Cerca · hasta 4 h desde Cuenca", kind:"near", items:[
+    ["albarracin","Albarracín y Teruel","2 h 30"],["toledo","Toledo","2 h 15"],["madrid","Madrid","2 h"],
+    ["almagro","Almagro y Ciudad Real","2 h 30"],["segovia","Segovia","3 h"],["soria","Soria y Cañón del Río Lobos","3 h"],
+    ["alicante","Alicante y costa","3 h"],["peniscola","Peñíscola y Castellón","3 h"],["zaragoza","Zaragoza","3 h 30"],
+    ["murcia","Murcia y Cartagena","3 h 30"],["ubeda","Úbeda y Baeza","3 h 45"],["salamanca","Salamanca","4 h"],
+    ["rioja","La Rioja (Logroño, Haro)","4 h"],["burgos","Burgos","4 h"],["delta","Delta del Ebro","4 h"],["jerte","Valle del Jerte y La Vera","4 h"]]},
+  {g:"Norte · 5 h o más", kind:"north", items:[
+    ["bilbao","Bilbao y San Sebastián","5 h 30"],["cantabria","Cantabria","5 h 30"],["asturias","Asturias","6 h"],
+    ["pirineo","Pirineo aragonés","5 h"],["galicia","Galicia","7 h"],["camino","Tramo del Camino de Santiago","7 h"]]},
+  {g:"Europa · en avión", kind:"europe", items:[
+    ["amsterdam","Ámsterdam","avión"],["budapest","Budapest (Sparty en Széchenyi)","avión"],["dublin","Dublín / Irlanda","avión"],
+    ["praga","Praga","avión"],["cracovia","Cracovia","avión"],["lisboa","Lisboa u Oporto","avión"],["berlin","Berlín","avión"]]}
+];
+const DEST_INDEX = {}; DESTS.forEach(g=>g.items.forEach(([k,l,t])=>DEST_INDEX[k]={label:l,kind:g.kind,time:t}));
+const MULTI = new Set(["kind","likes"]);
+
+// ---------- Construcción del formulario ----------
+function chipGroup(id, opts, multi){
+  const el = document.getElementById(id);
+  el.innerHTML = opts.map(([v,l],i)=>`<label class="chip"><input type="${multi?"checkbox":"radio"}" name="${id}" id="${id}-${i}" value="${v}"><span>${l}</span></label>`).join("");
+}
+Object.entries(OPTS).forEach(([k,o])=>chipGroup(k,o,MULTI.has(k)));
+document.getElementById("dest").innerHTML = DESTS.map((g,gi)=>
+  `<div class="group-title">${g.g}</div><div class="chips" style="margin:8px 0 10px">${g.items.map(([v,l,t],i)=>
+    `<label class="chip"><input type="checkbox" name="dest" id="dest-${gi}-${i}" value="${v}"><span>${l} <small>${t}</small></span></label>`).join("")}</div>`).join("");
+
+let dayState = {};
+function renderCal(){
+  document.getElementById("cal").innerHTML = DAYS.map(x=>{
+    const s = dayState[x.d]||"";
+    return `<button type="button" class="day${x.fest?" fest":""}" data-d="${x.d}" data-s="${s}" title="${x.fest||""}" aria-label="${x.w} ${x.d} de diciembre: ${STATE_TXT[s]}">
+      <span class="dw">${x.w}</span><span class="dn">${x.d}</span><span class="st">${STATE_TXT[s]}</span></button>`;
+  }).join("");
+}
+document.getElementById("cal").addEventListener("click",e=>{
+  const b = e.target.closest(".day"); if(!b) return;
+  const d = +b.dataset.d; const cur = dayState[d]||"";
+  dayState[d] = STATES[(STATES.indexOf(cur)+1)%STATES.length];
+  renderCal(); saveDraft();
+});
+document.getElementById("all-free").onclick = ()=>{DAYS.forEach(x=>dayState[x.d]="free");renderCal();saveDraft();};
+document.getElementById("all-clear").onclick = ()=>{dayState={};renderCal();saveDraft();};
+renderCal();
+
+function readForm(){
+  const f = document.getElementById("f");
+  const one = n => (f.querySelector(`input[name="${n}"]:checked`)||{}).value||"";
+  const many = n => [...f.querySelectorAll(`input[name="${n}"]:checked`)].map(i=>i.value);
+  return {
+    name: document.getElementById("name").value.trim(),
+    attend: one("attend"), days: {...dayState}, length: one("length"), origin: one("origin"), car: one("car"),
+    budget: one("budget"), kind: many("kind"), dest: many("dest"), destOther: document.getElementById("dest-other").value.trim(),
+    pace: one("pace"), stay: one("stay"), likes: many("likes"), notes: document.getElementById("notes").value.trim()
+  };
+}
+function fillForm(r){
+  const f = document.getElementById("f");
+  f.querySelectorAll("input[type=radio],input[type=checkbox]").forEach(i=>{
+    const v = r[i.name]; i.checked = Array.isArray(v) ? v.includes(i.value) : v===i.value;
+  });
+  document.getElementById("dest-other").value = r.destOther||"";
+  document.getElementById("notes").value = r.notes||"";
+  dayState = {...(r.days||{})}; renderCal();
+}
+const keyOf = n => n.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\s+/g," ").trim();
+
+// Borrador local por si cierras la página sin guardar
+function saveDraft(){ try{ localStorage.setItem("viaje-draft", JSON.stringify(readForm())); }catch(e){} }
+document.getElementById("f").addEventListener("change", saveDraft);
+document.getElementById("f").addEventListener("input", saveDraft);
+try{ const d = JSON.parse(localStorage.getItem("viaje-draft")||"null"); if(d){ document.getElementById("name").value=d.name||""; fillForm(d);} }catch(e){}
+
+// ---------- Almacenamiento ----------
+let DATA = {people:{}};
+async function load(){
+  const r = await fetch(API_URL, {cache:"no-store"});
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  const j = await r.json(); DATA = j && j.people ? j : {people:{}};
+  return DATA;
+}
+async function save(entry){
+  // text/plain evita la petición previa CORS, que Apps Script no admite
+  const r = await fetch(API_URL, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify({key: keyOf(entry.name), entry})});
+  const j = await r.json();
+  if(!j.ok) throw new Error(j.error||"error");
+  DATA.people[keyOf(entry.name)] = entry;
+}
+
+document.getElementById("name").addEventListener("change", ()=>{
+  const k = keyOf(document.getElementById("name").value);
+  const prev = DATA.people[k];
+  if(prev){ fillForm(prev); document.getElementById("name-hint").textContent = "Hemos cargado lo que votaste. Cambia lo que quieras y vuelve a guardar."; }
+});
+
+document.getElementById("f").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const st = document.getElementById("status"), btn = document.getElementById("send");
+  const r = readForm();
+  if(!r.name){ st.className="status err"; st.textContent="Pon tu nombre para guardar el voto."; document.getElementById("name").focus(); return; }
+  if(!r.attend){ st.className="status err"; st.textContent="Marca si vas a poder venir (pregunta 02)."; return; }
+  btn.disabled = true; st.className="status"; st.textContent="Guardando…";
+  try{
+    await save(r);
+    st.className="status ok"; st.textContent="Voto guardado. Puedes cambiarlo cuando quieras.";
+    renderResults();
+  }catch(err){
+    st.className="status err"; st.textContent="No se ha podido guardar. Revisa la conexión y vuelve a pulsar.";
+  }finally{ btn.disabled = false; }
+});
+
+// ---------- Resultados ----------
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const label = (k,v) => (OPTS[k].find(o=>o[0]===v)||[,v||"—"])[1];
+const avail = (p,d) => p.days && (p.days[d]==="free"||p.days[d]==="tele");
+
+function tally(list, key){
+  const c = {}; list.forEach(p=>[].concat(p[key]||[]).forEach(v=>{ if(v) c[v]=(c[v]||0)+1; }));
+  return Object.entries(c).sort((a,b)=>b[1]-a[1]);
+}
+function tallyHTML(rows, labelFn, max){
+  if(!rows.length) return `<p class="hint">Aún sin votos.</p>`;
+  max = max || rows[0][1];
+  return `<div class="tally">${rows.map(([k,n])=>`<div class="trow"><span class="tl2" title="${esc(labelFn(k))}">${esc(labelFn(k))}</span><span class="tb"><i style="width:${n/max*100}%"></i></span><span class="tn">${n}</span></div>`).join("")}</div>`;
+}
+function kindFor(len){
+  if(len<=3) return {k:"near", txt:"Escapada cerca (≤4 h en coche)"};
+  if(len<=5) return {k:"north|europe", txt:"Norte o Europa en avión"};
+  return {k:"any", txt:"Lo que queráis: norte, Europa o ruta"};
+}
+
+async function renderResults(){
+  const box = document.getElementById("results");
+  try{ await load(); }catch(e){ box.innerHTML = `<div class="empty">No se han podido cargar los votos. Recarga la página en un momento.</div>`; return; }
+  const all = Object.values(DATA.people).sort((a,b)=>a.name.localeCompare(b.name,"es"));
+  if(!all.length){ box.innerHTML = `<div class="empty">Todavía no ha votado nadie. Ve a la pestaña <b>Votar</b> y sé el primero.</div>`; return; }
+  const going = all.filter(p=>p.attend==="yes"||p.attend==="prob");
+  const unsure = all.filter(p=>p.attend==="unk");
+  const out = all.filter(p=>p.attend==="no");
+
+  // Ventanas de días seguidos
+  const wins = [];
+  for(let i=0;i<DAYS.length;i++) for(let j=i+1;j<DAYS.length;j++){
+    const ds = DAYS.slice(i,j+1).map(x=>x.d);
+    const ok = going.filter(p=>ds.every(d=>avail(p,d)));
+    const okUnsure = unsure.filter(p=>ds.every(d=>avail(p,d)));
+    wins.push({from:ds[0], to:ds[ds.length-1], len:ds.length, ok, okUnsure, tele: ok.filter(p=>ds.some(d=>p.days[d]==="tele"))});
+  }
+  wins.sort((a,b)=> b.ok.length-a.ok.length || b.len-a.len || b.okUnsure.length-a.okUnsure.length);
+  const seen = new Set(), top = [];
+  for(const w of wins){ const k=w.ok.map(p=>p.name).join("|")+"#"+w.len; if(seen.has(k)) continue; seen.add(k); top.push(w); if(top.length===5) break; }
+  // Añade la mejor opción larga (≥4 días) si no está ya
+  const longBest = wins.filter(w=>w.len>=4)[0];
+  if(longBest && !top.includes(longBest)) top.push(longBest);
+  const best = top[0];
+
+  // Presupuesto del grupo
+  const budgets = going.map(p=>p.budget).filter(b=>b && b!=="any").map(Number);
+  const cap = budgets.length ? Math.min(...budgets) : null;
+
+  // Destino recomendado dentro del tipo que encaja
+  const kf = best ? kindFor(best.len) : null;
+  const pool = going.length ? going : all;
+  const destRows = tally(pool,"dest");
+  const fit = kf ? destRows.filter(([k])=>kf.k==="any" || kf.k.split("|").includes(DEST_INDEX[k]?.kind)) : [];
+  const topDest = fit[0] ? DEST_INDEX[fit[0][0]].label : null;
+  const paceTop = tally(pool,"pace")[0];
+
+  const heatMax = Math.max(1, going.length);
+  const heat = DAYS.map(x=>{
+    const f = going.filter(p=>p.days?.[x.d]==="free").length, t = going.filter(p=>p.days?.[x.d]==="tele").length;
+    return `<div class="hcol"><b>${f+t}</b><div class="hbar" title="${f} libres, ${t} teletrabajando"><div class="f" style="height:${f/heatMax*100}%"></div><div class="tl" style="height:${t/heatMax*100}%"></div></div><span>${x.w} ${x.d}${x.fest?" ★":""}</span></div>`;
+  }).join("");
+
+  const fmtWin = w => w.from===w.to ? `${w.from} dic` : `${w.from}–${w.to} dic`;
+  const winHTML = top.map((w,i)=>{
+    const missing = going.filter(p=>!w.ok.includes(p)).map(p=>p.name);
+    return `<div class="win${i===0?" best":""}">
+      <span class="pill">${w.len} días</span>
+      <div style="min-width:0"><div class="dates">${fmtWin(w)} · ${esc(kindFor(w.len).txt)}</div>
+        <div class="who">${w.ok.length?"Van: "+esc(w.ok.map(p=>p.name).join(", ")):"Nadie puede todos esos días"}${missing.length?" · Se quedan fuera: "+esc(missing.join(", ")):""}${w.okUnsure.length?" · Podrían sumarse: "+esc(w.okUnsure.map(p=>p.name).join(", ")):""}${w.tele.length?" · Teletrabajando: "+esc(w.tele.map(p=>p.name).join(", ")):""}</div></div>
+      <div class="cnt">${w.ok.length}<small>de ${going.length}</small></div></div>`;
+  }).join("");
+
+  const verdict = best && best.ok.length ? `<div class="verdict">
+      <span class="eyebrow">Recomendación con los votos de ahora</span>
+      <h2>${fmtWin(best)} · ${best.len} días · ${esc(kf.txt)}</h2>
+      <p>${best.ok.length} de ${going.length} personas que van pueden esos días.${topDest?` El destino más votado que encaja es <b>${esc(topDest)}</b>.`:""}${cap?` Presupuesto del grupo: hasta ${cap} € por persona.`:" Nadie ha puesto límite de presupuesto."}${paceTop?` Ritmo preferido: ${esc(label("pace",paceTop[0]).split(":")[0].toLowerCase())}.`:""}</p>
+    </div>` : `<div class="verdict"><h2>Aún no hay fechas en común</h2><p>Hace falta que más gente marque «Sí» o «Probablemente» y sus días.</p></div>`;
+
+  const dotRow = p => DAYS.map(x=>`<span class="dot ${p.days?.[x.d]||""}" title="${x.d}: ${STATE_TXT[p.days?.[x.d]||""]}"></span>`).join("");
+  const table = all.map(p=>`<tr><td><b>${esc(p.name)}</b></td><td>${esc(label("attend",p.attend))}</td><td class="dots">${dotRow(p)}</td><td>${esc(label("budget",p.budget))}</td><td>${esc(label("origin",p.origin))}${p.car==="yes"?" · coche":""}</td><td>${esc(p.notes||"")}</td></tr>`).join("");
+
+  const others = all.filter(p=>p.destOther).map(p=>`${esc(p.destOther)} <span class="hint" style="display:inline">(${esc(p.name)})</span>`);
+  const cars = going.filter(p=>p.car==="yes").length, carsMaybe = going.filter(p=>p.car==="maybe").length;
+
+  box.innerHTML = `<div style="display:grid;gap:20px">
+    ${verdict}
+    <div class="kpis">
+      <div class="kpi"><b>${all.length}</b><span>han votado</span></div>
+      <div class="kpi"><b>${going.length}</b><span>van seguro o probablemente</span></div>
+      <div class="kpi"><b>${unsure.length}</b><span>no lo saben aún</span></div>
+      <div class="kpi"><b>${cars}${carsMaybe?`<small style="font-size:15px"> +${carsMaybe}</small>`:""}</b><span>coches disponibles</span></div>
+    </div>
+    <div class="card"><h2>Quién puede cada día</h2><p class="hint">Solo cuenta a quien va seguro o probablemente. Verde: libre · Ámbar: teletrabajando.</p><div class="heat">${heat}</div></div>
+    <div class="card"><h2>Mejores fechas</h2><p class="hint">Días seguidos en los que coincide más gente.</p><div style="display:grid;gap:8px">${winHTML || '<p class="hint">Aún sin datos de días.</p>'}</div></div>
+    <div class="grid2">
+      <div class="card"><h3>Tipo de viaje</h3>${tallyHTML(tally(pool,"kind"),k=>label("kind",k))}</div>
+      <div class="card"><h3>Presupuesto máximo</h3>${tallyHTML(tally(pool,"budget"),k=>label("budget",k))}</div>
+    </div>
+    <div class="card"><h3>Destinos más votados</h3>${tallyHTML(destRows.slice(0,12),k=>DEST_INDEX[k]?.label||k)}${others.length?`<p class="hint">Otras ideas: ${others.join(" · ")}</p>`:""}</div>
+    <div class="grid2">
+      <div class="card"><h3>Ritmo</h3>${tallyHTML(tally(pool,"pace"),k=>label("pace",k).split(":")[0])}</div>
+      <div class="card"><h3>Alojamiento</h3>${tallyHTML(tally(pool,"stay"),k=>label("stay",k))}</div>
+      <div class="card"><h3>Planes</h3>${tallyHTML(tally(pool,"likes"),k=>label("likes",k))}</div>
+      <div class="card"><h3>Duración ideal</h3>${tallyHTML(tally(pool,"length"),k=>label("length",k))}</div>
+    </div>
+    <div class="card"><h2>Respuestas de cada uno</h2>
+      <div class="tablewrap"><table><thead><tr><th>Nombre</th><th>¿Viene?</th><th>Días 5→13</th><th>Presupuesto</th><th>Sale de</th><th>Notas</th></tr></thead><tbody>${table}</tbody></table></div>
+      ${out.length?`<p class="hint">No pueden: ${esc(out.map(p=>p.name).join(", "))}</p>`:""}
+    </div>
+  </div>`;
+}
+
+// ---------- Pestañas ----------
+function show(tab){
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected", b.dataset.tab===tab));
+  ["votar","resultados","plan"].forEach(t=>document.getElementById("tab-"+t).hidden = t!==tab);
+  if(tab==="resultados") renderResults();
+}
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ history.replaceState(null,"","#"+b.dataset.tab); show(b.dataset.tab); });
+show(["votar","resultados","plan"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "votar");
+load().catch(()=>{});
+</script>
+</body>
+</html>
